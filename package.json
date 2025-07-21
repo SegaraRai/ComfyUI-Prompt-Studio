@@ -24,7 +24,7 @@
     "machine-translate": "inlang machine translate --project project.inlang",
     "sync-version": "node --experimental-strip-types --experimental-transform-types --experimental-detect-module ./scripts/sync-version.ts",
     "changeset": "changeset",
-    "version": "changeset version",
+    "version": "changeset version && pnpm run sync-version",
     "release": "changeset publish"
   },
   "files": [
