@@ -69,6 +69,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Setup Playwright
+        run: pnpm playwright install chromium --with-deps
+
       - name: Build WASM
         run: pnpm run build-wasm
 
