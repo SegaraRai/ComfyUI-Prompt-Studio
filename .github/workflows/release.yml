@@ -100,7 +100,7 @@ jobs:
           title: "Release: Version Packages"
           commit: "Release: Version Packages"
           publish: pnpm changeset tag
-          version: pnpm version
+          version: pnpm run version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
