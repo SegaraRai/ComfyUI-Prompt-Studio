@@ -93,7 +93,7 @@
         class="select select-sm"
         bind:value={() => $locale, (v) => ($locale = v)}
       >
-        {#each locales as localeOption}
+        {#each locales as localeOption (localeOption)}
           <option value={localeOption}>
             {LOCALE_NAMES[localeOption]}
           </option>

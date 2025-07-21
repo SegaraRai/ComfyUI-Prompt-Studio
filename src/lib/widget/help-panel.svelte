@@ -43,6 +43,8 @@
   } = $props();
 
   const m = $derived(jotai(i18nAtom, store));
+
+  /* eslint-disable svelte/no-useless-mustaches */
 </script>
 
 <div class="space-y-8">

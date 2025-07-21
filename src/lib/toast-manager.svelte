@@ -130,6 +130,8 @@
       animatingOut.clear();
     };
   });
+
+  /* eslint-disable @typescript-eslint/no-explicit-any */
 </script>
 
 <div

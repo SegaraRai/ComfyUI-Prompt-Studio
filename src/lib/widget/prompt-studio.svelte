@@ -112,6 +112,7 @@
   import "./help-panel.svelte";
   import "./prompt-file-list.svelte";
   import "./settings-panel.svelte";
+  import { onMount } from "svelte";
 
   const AUTO_SAVE_DELAY = 300; // 300 milliseconds for auto-save debounce
 
@@ -164,7 +165,6 @@
 
   // - Sync external value with internal state
   $effect(() => {
-    value;
     if ($valueState !== value) {
       $valueState = value;
     }
@@ -205,9 +205,14 @@
   });
 
   // - Dispatch input events when compiled prompt changes
-  $effect(() => {
-    $compiledPrompt;
-    $host().dispatchEvent(new Event("cps-input"));
+  onMount(() => {
+    return compiledPrompt.subscribe(() => {
+      if ($isRestoring) {
+        return;
+      }
+
+      $host().dispatchEvent(new Event("cps-input"));
+    });
   });
 
   const handlePromptInput = (event: Event) => {

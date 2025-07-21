@@ -159,7 +159,7 @@
   } = $props();
 
   let editorElement: HTMLDivElement;
-  let view: EditorView | null = null;
+  let view = $state<EditorView>();
 
   const getContext = (): PluginContext => ({
     i18n,
@@ -292,20 +292,25 @@
 
   // Handle external value changes
   $effect(() => {
-    value;
-    if (view && view.state.doc.toString() !== value) {
-      view.dispatch({
-        changes: {
-          from: 0,
-          to: view.state.doc.length,
-          insert: value,
-        },
-      });
+    if (!view || view.state.doc.toString() === value) {
+      return;
     }
+
+    view.dispatch({
+      changes: {
+        from: 0,
+        to: view.state.doc.length,
+        insert: value,
+      },
+    });
   });
 
   // Watch disabled and placeholder props for changes
   $effect(() => {
+    if (!view) {
+      return;
+    }
+
     // Reconfigure extensions when disabled or placeholder changes
     const newExtensions = getExtensions();
     view?.dispatch({
@@ -351,7 +356,7 @@
 
     return () => {
       view?.destroy();
-      view = null;
+      view = undefined;
     };
   });
 </script>

@@ -11,6 +11,7 @@ const gitignorePath = fileURLToPath(new URL("./.gitignore", import.meta.url));
 
 export default ts.config(
   includeIgnoreFile(gitignorePath),
+  { ignores: ["wasm/pkg"] },
   js.configs.recommended,
   ...ts.configs.recommended,
   ...svelte.configs.recommended,
@@ -35,6 +36,11 @@ export default ts.config(
         parser: ts.parser,
         svelteConfig,
       },
+    },
+  },
+  {
+    rules: {
+      "svelte/no-useless-mustaches": ["warn", { ignoreStringEscape: true }],
     },
   },
 );
