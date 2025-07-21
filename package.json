@@ -1,7 +1,7 @@
 {
   "name": "comfyui-prompt-studio",
   "description": "A universal ComfyUI extension that enhances any input field with advanced prompt editing, auto-completion, custom chants, and save/load functionality.",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "vite dev",
