@@ -99,6 +99,10 @@
       | EventHandler<Event, CPSPromptEditorElement>
       | null
       | undefined;
+    "oncps-editor-autocompletion"?:
+      | EventHandler<CustomEvent<{ active: boolean }>, CPSPromptEditorElement>
+      | null
+      | undefined;
   }
 </script>
 
@@ -107,8 +111,14 @@
     acceptCompletion,
     closeCompletion,
     completionKeymap,
+    completionStatus,
   } from "@codemirror/autocomplete";
-  import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
+  import {
+    defaultKeymap,
+    history,
+    redo,
+    historyKeymap,
+  } from "@codemirror/commands";
   import { EditorState, StateEffect, type Extension } from "@codemirror/state";
   import {
     drawSelection,
@@ -160,6 +170,7 @@
 
   let editorElement: HTMLDivElement;
   let view = $state<EditorView>();
+  let isCompletionActive = $state(false);
 
   const getContext = (): PluginContext => ({
     i18n,
@@ -237,6 +248,10 @@
       preventDefault: true,
     },
     {
+      key: "Mod-Shift-z",
+      run: redo,
+    },
+    {
       key: "Tab",
       run: acceptCompletion,
     },
@@ -263,6 +278,21 @@
 
         // Dispatch input event
         $host().dispatchEvent(new Event("cps-editor-input"));
+      }
+
+      // Check for completion status changes
+      const status = completionStatus(update.state);
+      const active = status !== null;
+
+      if (active !== isCompletionActive) {
+        isCompletionActive = active;
+
+        // Dispatch the autocompletion event
+        $host().dispatchEvent(
+          new CustomEvent("cps-editor-autocompletion", {
+            detail: { active },
+          }),
+        );
       }
     }),
   ];
@@ -313,18 +343,22 @@
 
     // Reconfigure extensions when disabled or placeholder changes
     const newExtensions = getExtensions();
-    view?.dispatch({
+    view.dispatch({
       effects: StateEffect.reconfigure.of(newExtensions),
     });
   });
 
   // Watch userData changes and trigger tag decoration plugin update
   $effect(() => {
+    if (!view) {
+      return;
+    }
+
     // Access userData to create reactivity
     getContext();
 
     // Dispatch a custom effect to trigger plugin updates
-    view?.dispatch({
+    view.dispatch({
       effects: contextUpdateEffect.of(null),
     });
   });

@@ -51,6 +51,7 @@ declare global {
     "cps-editor-save-as": Event;
     "cps-editor-new": Event;
     "cps-editor-open": Event;
+    "cps-editor-autocompletion": CustomEvent<{ active: boolean }>;
 
     "cps-input": Event;
     "cps-close": Event;

@@ -10,11 +10,11 @@
         }
 
         get #internal() {
-          return (this as unknown as WithInternal).__internal;
+          return this as unknown as WithInternal;
         }
 
         get compiledPrompt(): CompiledPrompt | null {
-          return this.#internal?.getCompiledPrompt() ?? null;
+          return this.#internal.__internalCompiledPrompt ?? null;
         }
 
         override focus(options?: FocusOptions): void {
@@ -112,14 +112,11 @@
   import "./help-panel.svelte";
   import "./prompt-file-list.svelte";
   import "./settings-panel.svelte";
-  import { onMount } from "svelte";
 
   const AUTO_SAVE_DELAY = 300; // 300 milliseconds for auto-save debounce
 
   interface WithInternal {
-    __internal?: {
-      getCompiledPrompt: () => CompiledPrompt;
-    };
+    __internalCompiledPrompt?: CompiledPrompt;
   }
 
   let {
@@ -190,6 +187,16 @@
 
   // - Update compile context with latest definitions, resources, and options
   $effect(() => {
+    const newContext = {
+      chantDefinitions: $chantDefinitions,
+      resourceDefinition,
+      options: $settingsCompilation,
+    };
+
+    if (JSON.stringify($compileContext) === JSON.stringify(newContext)) {
+      return;
+    }
+
     $compileContext = {
       chantDefinitions: $chantDefinitions,
       resourceDefinition,
@@ -198,21 +205,12 @@
   });
 
   // - Expose compiled prompt through internal API
-  $effect(() => {
-    ($host() as unknown as WithInternal).__internal = {
-      getCompiledPrompt: () => $compiledPrompt,
-    };
-  });
-
   // - Dispatch input events when compiled prompt changes
-  onMount(() => {
-    return compiledPrompt.subscribe(() => {
-      if ($isRestoring) {
-        return;
-      }
+  $effect(() => {
+    ($host() as unknown as WithInternal).__internalCompiledPrompt =
+      $compiledPrompt;
 
-      $host().dispatchEvent(new Event("cps-input"));
-    });
+    $host().dispatchEvent(new Event("cps-input"));
   });
 
   const handlePromptInput = (event: Event) => {
@@ -386,6 +384,10 @@
   let showPreview = $state(true);
   let showHelp = $state(false);
 
+  // Focus Trap States
+  let autoCompletingPromptEditor = $state(false);
+  let autoCompletingChantsEditor = $state(false);
+
   // Editor Integration
   let autoCompleteContainerElement = $state<HTMLElement>();
   let promptEditorElement = $state<CPSPromptEditorElement>();
@@ -425,16 +427,19 @@
 
 <div
   use:focusTrap={{
-    checkCanFocusTrap: async () => {
-      const until = Date.now() + 1000;
-      while (!promptEditorElement?.ready && Date.now() < until) {
-        await new Promise((resolve) => setTimeout(resolve, 50));
-      }
+    options: {
+      checkCanFocusTrap: async () => {
+        const until = Date.now() + 1000;
+        while (!promptEditorElement?.ready && Date.now() < until) {
+          await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+      },
+      tabbableOptions: {
+        getShadowRoot: true,
+      },
+      initialFocus: false,
     },
-    tabbableOptions: {
-      getShadowRoot: true,
-    },
-    initialFocus: false,
+    paused: autoCompletingPromptEditor || autoCompletingChantsEditor,
   }}
   class="modal modal-open cps-editor-theme [--hint-font-size:calc(var(--editor-font-size)*0.8)]"
   role="dialog"
@@ -446,7 +451,7 @@
   }}
 >
   <div
-    class="modal-box bg-base-200 text-base-content mt-4 grid h-[calc(100vh-var(--spacing)*8)] w-320 max-w-[calc(100vw-var(--spacing)*10)] overflow-visible"
+    class="modal-box bg-base-200 text-base-content relative mt-4 grid h-[calc(100vh-var(--spacing)*8)] w-320 max-w-[calc(100vw-var(--spacing)*10)] overflow-visible"
   >
     <div class="grid grid-rows-[max-content_1fr] overflow-hidden">
       <!-- Header Section -->
@@ -454,7 +459,7 @@
         <h2 class="flex-none text-xl font-semibold not-md:hidden">
           {$m["app.title"]()}
         </h2>
-        <div class="flex-none space-x-4">
+        <div class="absolute right-6 space-x-4">
           <span class="space-x-2">
             <button
               class="btn btn-sm btn-soft"
@@ -564,6 +569,9 @@
               oncps-editor-save-as={handlePromptEditorEvent}
               oncps-editor-new={handlePromptEditorEvent}
               oncps-editor-open={handlePromptEditorEvent}
+              oncps-editor-autocompletion={(event) => {
+                autoCompletingPromptEditor = event.detail.active;
+              }}
             ></cps-prompt-editor>
           </div>
 
@@ -589,6 +597,9 @@
                 tooltipParent={autoCompleteContainerElement}
                 oncps-editor-input={handleChantsInput}
                 oncps-editor-submit={focusToPromptEditor}
+                oncps-editor-autocompletion={(event) => {
+                  autoCompletingChantsEditor = event.detail.active;
+                }}
               ></cps-prompt-editor>
             </div>
           {:else}

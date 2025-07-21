@@ -90,23 +90,20 @@ export const cleanCompiledPromptAtom = atom<string | null>((get) => {
 // Set up compilation trigger to be called from document.ts
 registerDocumentUpdateCallback(
   (get: Getter, set: Setter, newState, oldState) => {
-    // Only trigger compilation if content changed
-    if (newState.content !== oldState.content) {
-      set(compiledPromptBaseAtom, (old) =>
-        old.state === "loading"
-          ? old
-          : {
-              state: "stale",
-              text: old.text,
-            },
-      );
-
-      triggerCompilation(
-        get,
-        set,
-        newState.content,
-        get(compileContextBaseAtom),
-      );
+    if (newState.content === oldState.content) {
+      // No change in content, no need to recompile
+      return;
     }
+
+    set(compiledPromptBaseAtom, (old) =>
+      old.state === "loading"
+        ? old
+        : {
+            state: "stale",
+            text: old.text,
+          },
+    );
+
+    triggerCompilation(get, set, newState.content, get(compileContextBaseAtom));
   },
 );
