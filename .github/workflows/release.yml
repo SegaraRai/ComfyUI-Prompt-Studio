@@ -119,9 +119,11 @@ jobs:
       - name: Create ComfyUI release package (on release)
         if: steps.changesets.outputs.published == 'true'
         run: |
-          LATEST_VERSION=$(echo '${{ steps.changesets.outputs.publishedPackages }}' | jq -r '.[0].version' // "latest")
-          tar -czf cps-comfyui-v${LATEST_VERSION}.tar.gz -C dist-extensions/comfy-ui .
-          gh release upload v${LATEST_VERSION} cps-comfyui-v${LATEST_VERSION}.tar.gz
+          LATEST_VERSION=$(echo '${{ steps.changesets.outputs.publishedPackages }}' | jq -r '.[0].version // "latest"')
+          cd dist-extensions/comfy-ui
+          zip -r ../../cps-comfyui-v${LATEST_VERSION}.zip .
+          cd ../..
+          gh release upload v${LATEST_VERSION} cps-comfyui-v${LATEST_VERSION}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
