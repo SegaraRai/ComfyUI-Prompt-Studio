@@ -75,6 +75,9 @@ jobs:
       - name: Test Rust code
         run: cd wasm && cargo test
 
+      - name: Build
+        run: pnpm run build
+
       - name: Typecheck Frontend
         run: pnpm run check
 
@@ -83,9 +86,6 @@ jobs:
 
       - name: Test Frontend
         run: pnpm run test
-
-      - name: Build Frontend Demo
-        run: pnpm run build
 
       - name: Build Extensions
         run: pnpm run build-extensions-comfyui
