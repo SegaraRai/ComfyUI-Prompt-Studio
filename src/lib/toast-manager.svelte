@@ -136,7 +136,7 @@
 
 <div
   bind:this={containerElement}
-  class="pointer-events-none fixed z-5000 size-full overflow-hidden bg-transparent px-8 py-6"
+  class="pointer-events-none fixed inset-0 z-5000 size-full overflow-hidden bg-transparent px-8 py-6"
   data-theme={$settingsAppearance.theme}
 >
   <div class="flex flex-col-reverse items-end gap-y-4">
