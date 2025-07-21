@@ -1,0 +1,230 @@
+@import "tailwindcss";
+
+@plugin "@iconify/tailwind4";
+
+@plugin "daisyui" {
+  themes:
+    light --default,
+    dark --prefersdark;
+}
+
+@source ".";
+
+:host {
+  overflow-wrap: anywhere;
+  word-break: normal;
+  line-break: strict;
+}
+
+/* CodeMirror theme */
+
+.cps-editor-theme {
+  /* Light theme (default) */
+
+  @apply [--keyword-invalid:#dc2626];
+  @apply [--keyword-unregistered:#8b5cf6];
+  @apply [--keyword-type-lora:#db2777];
+  @apply [--keyword-type-chant:#16a34a];
+  @apply [--keyword-type-embedding:#ea580c];
+  @apply [--keyword-category-general:#2563eb];
+  @apply [--keyword-category-artist:#dc2626];
+  @apply [--keyword-category-copyright:#7c3aed];
+  @apply [--keyword-category-character:#059669];
+  @apply [--keyword-category-meta:#ca8a04];
+
+  @apply [--editor-bg-color:#f3f3f7];
+  @apply [--editor-text-color:#374151];
+  @apply [--editor-border-color:#d1d5db];
+  @apply [--editor-focus-color:#3b82f6];
+  @apply [--editor-placeholder-color:#9ca3af];
+  @apply [--editor-cursor-color:#374151bf];
+  @apply [--editor-selection-bg:#dbeafe];
+  @apply [--editor-comment-color:#6b7280];
+
+  @apply [--autocomplete-bg-color:#f0f0f2];
+  @apply [--autocomplete-text-color:#374151];
+  @apply [--autocomplete-border-color:#d1d5db];
+  @apply [--autocomplete-detail-color:#6b7280];
+  @apply [--autocomplete-info-color:#374151];
+  @apply [--autocomplete-selected-bg:#eff6ff];
+  @apply [--autocomplete-selected-text:#1e40af];
+
+  /* Dark theme overrides */
+
+  &[data-theme="dark"] {
+    @apply [--keyword-invalid:#ef4444];
+    @apply [--keyword-unregistered:#e3a559];
+    @apply [--keyword-type-lora:#ee1fb0];
+    @apply [--keyword-type-chant:#95db26];
+    @apply [--keyword-type-embedding:#facc15];
+    @apply [--keyword-category-general:#5f9cf1];
+    @apply [--keyword-category-artist:#e1455f];
+    @apply [--keyword-category-copyright:#a78bfa];
+    @apply [--keyword-category-character:#10b975];
+    @apply [--keyword-category-meta:#e8b32d];
+
+    @apply [--editor-bg-color:#1e222e];
+    @apply [--editor-text-color:#f9fafb];
+    @apply [--editor-border-color:#374151];
+    @apply [--editor-focus-color:#60a5fa];
+    @apply [--editor-placeholder-color:#6b7280];
+    @apply [--editor-cursor-color:#f9fafbbf];
+    @apply [--editor-selection-bg:#3730a3];
+    @apply [--editor-comment-color:#9ca3af];
+
+    @apply [--autocomplete-bg-color:#374151];
+    @apply [--autocomplete-text-color:#f9fafb];
+    @apply [--autocomplete-border-color:#4b5563];
+    @apply [--autocomplete-detail-color:#9ca3af];
+    @apply [--autocomplete-info-color:#d1d5db];
+    @apply [--autocomplete-selected-bg:#1e3a8a];
+    @apply [--autocomplete-selected-text:#93c5fd];
+  }
+}
+
+/* CodeMirror styles */
+
+.cm-editor {
+  @apply size-full bg-(--editor-bg-color) text-(length:--editor-font-size) text-(--editor-text-color);
+
+  &.cm-focused {
+    @apply border-none outline-2 -outline-offset-2 outline-(--editor-focus-color);
+  }
+
+  .cm-content {
+    @apply size-full p-2 font-(family-name:--editor-font-family) leading-(--editor-line-height) text-(--editor-text-color) caret-(--editor-cursor-color);
+  }
+
+  .cm-placeholder {
+    @apply text-(--editor-placeholder-color) italic;
+  }
+
+  .cm-cursor {
+    @apply border-l-2 border-(--editor-cursor-color);
+  }
+
+  .cm-selectionBackground {
+    @apply !bg-(--editor-selection-bg);
+  }
+}
+
+/* Autocomplete styles */
+
+.cm-tooltip-autocomplete {
+  @apply font-(family-name:--editor-font-family) text-(length:--editor-font-size);
+  @apply rounded-md border border-(--autocomplete-border-color) bg-(--autocomplete-bg-color) font-(family-name:--editor-font-family) text-(--autocomplete-text-color) shadow-md;
+  @apply overflow-clip;
+
+  ul {
+    @apply max-h-80 max-w-[calc(min(--spacing(300),80vw))];
+    @apply overflow-y-auto;
+  }
+
+  ul li {
+    @apply overflow-hidden text-ellipsis whitespace-nowrap;
+
+    &[aria-selected] {
+      @apply bg-(--autocomplete-selected-bg) text-(--autocomplete-selected-text);
+
+      .cm-completionLabel {
+        @apply font-semibold;
+      }
+    }
+
+    &.cps-option-existing {
+      @apply italic opacity-60;
+    }
+
+    .cm-completionLabel {
+      @apply text-(length:--editor-font-size);
+      @apply flex-none pr-[0.5em];
+    }
+
+    .cm-completionDetail {
+      @apply text-(length:--hint-font-size) text-(--autocomplete-detail-color);
+      @apply whitespace-nowrap italic;
+    }
+
+    /* Completion icons */
+
+    .cm-completionIcon {
+      @apply inline-block flex-none translate-y-[0.1em] pr-[0.3em] pl-[0.2em];
+
+      /* Default icon */
+
+      @apply before:icon-[iconoir--hashtag];
+
+      /* Normal tags */
+
+      &:where(.cps-option-artist *) {
+        @apply before:icon-[iconoir--user-crown];
+      }
+
+      &:where(.cps-option-copyright *) {
+        @apply before:icon-[iconoir--star];
+      }
+
+      &:where(.cps-option-character *) {
+        @apply before:icon-[iconoir--user-square];
+      }
+
+      &:where(.cps-option-meta *) {
+        @apply before:icon-[iconoir--triangle-flag];
+      }
+
+      /* LoRA, embedding, and chant tags */
+
+      &:where(.cps-option-lora *) {
+        @apply before:icon-[iconoir--media-image-list];
+      }
+
+      &:where(.cps-option-embedding *) {
+        @apply before:icon-[iconoir--text-size];
+      }
+
+      &:where(.cps-option-chant *) {
+        @apply before:icon-[iconoir--bookmark];
+      }
+    }
+
+    /* Completion coloring (except details and info) */
+
+    :where(.cm-completionIcon, .cm-completionLabel) {
+      /* Normal tags */
+
+      &:where(.cps-option-general *) {
+        @apply text-(--keyword-category-general);
+      }
+
+      &:where(.cps-option-artist *) {
+        @apply text-(--keyword-category-artist);
+      }
+
+      &:where(.cps-option-copyright *) {
+        @apply text-(--keyword-category-copyright);
+      }
+
+      &:where(.cps-option-character *) {
+        @apply text-(--keyword-category-character);
+      }
+
+      &:where(.cps-option-meta *) {
+        @apply text-(--keyword-category-meta);
+      }
+
+      /* LoRA, embedding, and chant tags */
+
+      &:where(.cps-option-lora *) {
+        @apply text-(--keyword-type-lora);
+      }
+
+      &:where(.cps-option-embedding *) {
+        @apply text-(--keyword-type-embedding);
+      }
+
+      &:where(.cps-option-chant *) {
+        @apply text-(--keyword-type-chant);
+      }
+    }
+  }
+}

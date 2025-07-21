@@ -1,0 +1,9 @@
+# Dictionary sources for ComfyUI Prompt Studio
+# See docs/dictionary-sources.md for more information
+
+# General tags from Danbooru, with a minimum of 100 posts
+https://cps-tags.roundtrip.dev/danbooru_tags_general_min100.csv
+
+# Or, for example, a1111-sd-webui-tagcomplete's tags:
+# https://raw.githubusercontent.com/DominikDoom/a1111-sd-webui-tagcomplete/refs/heads/main/tags/danbooru.csv
+# https://raw.githubusercontent.com/DominikDoom/a1111-sd-webui-tagcomplete/refs/heads/main/tags/e621.csv

@@ -1,0 +1,15 @@
+# https://docs.comfy.org/registry/specifications
+
+[project]
+name = "prompt-studio"
+description = "A universal ComfyUI extension that enhances any input field with advanced prompt editing, auto-completion, custom chants, and save/load functionality."
+version = "1.0.0"
+license = { file = "LICENSE" }
+
+[project.urls]
+Repository = "https://github.com/SegaraRai/ComfyUI-Prompt-Studio"
+
+[tool.comfy]
+PublisherId = "segararai"
+DisplayName = "ComfyUI Prompt Studio"
+Icon = "https://cps-demo.roundtrip.dev/favicon.svg"
