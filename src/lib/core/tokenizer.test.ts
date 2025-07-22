@@ -11,7 +11,6 @@ describe("tokenizer functionality", () => {
     it("should parse normal tags", () => {
       const tag = parseTag("1girl");
       expect(tag).toEqual({
-        notation: "default",
         type: "normal",
         prefix: "",
         name: "1girl",
@@ -23,7 +22,6 @@ describe("tokenizer functionality", () => {
     it("should parse chant tags", () => {
       const tag = parseTag("@quality");
       expect(tag).toEqual({
-        notation: "default",
         type: "chant",
         prefix: "@",
         name: "quality",
@@ -35,7 +33,6 @@ describe("tokenizer functionality", () => {
     it("should parse complex chant tags with colons and weights", () => {
       const tag1 = parseTag("(@foo:bar:1)");
       expect(tag1).toEqual({
-        notation: "default",
         type: "chant",
         prefix: "@",
         name: "foo:bar",
@@ -45,7 +42,6 @@ describe("tokenizer functionality", () => {
 
       const tag2 = parseTag("(@foo:bar2:2.5)");
       expect(tag2).toEqual({
-        notation: "default",
         type: "chant",
         prefix: "@",
         name: "foo:bar2",
@@ -55,7 +51,6 @@ describe("tokenizer functionality", () => {
 
       const tag3 = parseTag("(@foo:bar3)");
       expect(tag3).toEqual({
-        notation: "default",
         type: "chant",
         prefix: "@",
         name: "foo:bar3",
@@ -67,7 +62,6 @@ describe("tokenizer functionality", () => {
     it("should parse embedding tags", () => {
       const tag = parseTag("<embedding:example>");
       expect(tag).toEqual({
-        notation: "default",
         type: "embedding",
         prefix: "embedding:",
         name: "example",
@@ -79,7 +73,6 @@ describe("tokenizer functionality", () => {
     it("should parse embedding tags with weight", () => {
       const tag = parseTag("<embedding:example:0.8>");
       expect(tag).toEqual({
-        notation: "default",
         type: "embedding",
         prefix: "embedding:",
         name: "example",
@@ -91,7 +84,6 @@ describe("tokenizer functionality", () => {
     it("should parse minus prefix embedding tags for erasure", () => {
       const tag = parseTag("-<embedding:example>");
       expect(tag).toEqual({
-        notation: "default",
         type: "embedding",
         prefix: "embedding:",
         name: "example",
@@ -103,7 +95,6 @@ describe("tokenizer functionality", () => {
     it("should parse minus prefix embedding tags with weight (minus overrides)", () => {
       const tag = parseTag("-<embedding:example:0.8>");
       expect(tag).toEqual({
-        notation: "default",
         type: "embedding",
         prefix: "embedding:",
         name: "example",
@@ -115,7 +106,6 @@ describe("tokenizer functionality", () => {
     it("should parse LoRA tags", () => {
       const tag = parseTag("<lora:example.safetensors:0.8>");
       expect(tag).toEqual({
-        notation: "lora",
         type: "lora",
         prefix: "lora:",
         name: "example.safetensors",
@@ -128,7 +118,6 @@ describe("tokenizer functionality", () => {
     it("should parse LoRA tags with extra parameters", () => {
       const tag = parseTag("<lora:example.safetensors:0.8:extra>");
       expect(tag).toEqual({
-        notation: "lora",
         type: "lora",
         prefix: "lora:",
         name: "example.safetensors",
@@ -141,7 +130,6 @@ describe("tokenizer functionality", () => {
     it("should parse LoRA tags without weight", () => {
       const tag = parseTag("<lora:example.safetensors>");
       expect(tag).toEqual({
-        notation: "lora",
         type: "lora",
         prefix: "lora:",
         name: "example.safetensors",
@@ -154,7 +142,6 @@ describe("tokenizer functionality", () => {
     it("should parse minus prefix LoRA tags for erasure", () => {
       const tag = parseTag("-<lora:example.safetensors>");
       expect(tag).toEqual({
-        notation: "lora",
         type: "lora",
         prefix: "lora:",
         name: "example.safetensors",
@@ -167,7 +154,6 @@ describe("tokenizer functionality", () => {
     it("should parse minus prefix LoRA tags with weight (minus overrides)", () => {
       const tag = parseTag("-<lora:example.safetensors:0.8>");
       expect(tag).toEqual({
-        notation: "lora",
         type: "lora",
         prefix: "lora:",
         name: "example.safetensors",
@@ -180,7 +166,6 @@ describe("tokenizer functionality", () => {
     it("should parse minus prefix LoRA tags with extra parameters", () => {
       const tag = parseTag("-<lora:example.safetensors:0.8:extra>");
       expect(tag).toEqual({
-        notation: "lora",
         type: "lora",
         prefix: "lora:",
         name: "example.safetensors",
@@ -193,7 +178,6 @@ describe("tokenizer functionality", () => {
     it("should parse weight tags", () => {
       const tag = parseTag("(smile:0.9)");
       expect(tag).toEqual({
-        notation: "default",
         type: "normal",
         prefix: "",
         name: "smile",
@@ -205,7 +189,6 @@ describe("tokenizer functionality", () => {
     it("should parse parentheses modifiers", () => {
       const tag = parseTag("((smile))");
       expect(tag).toEqual({
-        notation: "default",
         type: "normal",
         prefix: "",
         name: "smile",
@@ -217,7 +200,6 @@ describe("tokenizer functionality", () => {
     it("should parse bracket modifiers", () => {
       const tag = parseTag("[smile]");
       expect(tag).toEqual({
-        notation: "default",
         type: "normal",
         prefix: "",
         name: "smile",
@@ -229,7 +211,6 @@ describe("tokenizer functionality", () => {
     it("should parse negative tags", () => {
       const tag = parseTag("-bad_quality");
       expect(tag).toEqual({
-        notation: "default",
         type: "normal",
         prefix: "",
         name: "bad_quality",
@@ -241,7 +222,6 @@ describe("tokenizer functionality", () => {
     it("should handle malformed bracket tags", () => {
       const tag = parseTag("((smile)");
       expect(tag).toEqual({
-        notation: "default",
         type: "normal",
         prefix: "",
         name: "((smile)",
@@ -258,7 +238,6 @@ describe("tokenizer functionality", () => {
     it("should handle mixed bracket types", () => {
       const tag = parseTag("([smile])");
       expect(tag).toEqual({
-        notation: "default",
         type: "normal",
         prefix: "",
         name: "smile",
@@ -280,7 +259,6 @@ describe("tokenizer functionality", () => {
     it("should fall back to parsing as tag", () => {
       const token = parseToken("1girl");
       expect(token).toEqual({
-        notation: "default",
         type: "normal",
         prefix: "",
         name: "1girl",
@@ -298,7 +276,6 @@ describe("tokenizer functionality", () => {
   describe("stringifyTag", () => {
     it("should stringify normal tags", () => {
       const tag = {
-        notation: "default" as const,
         type: "normal" as const,
         prefix: "" as const,
         name: "1girl",
@@ -310,7 +287,6 @@ describe("tokenizer functionality", () => {
 
     it("should stringify tags with weights", () => {
       const tag = {
-        notation: "default" as const,
         type: "normal" as const,
         prefix: "" as const,
         name: "smile",
@@ -322,7 +298,6 @@ describe("tokenizer functionality", () => {
 
     it("should stringify negative tags", () => {
       const tag = {
-        notation: "default" as const,
         type: "normal" as const,
         prefix: "" as const,
         name: "bad_quality",
@@ -334,7 +309,6 @@ describe("tokenizer functionality", () => {
 
     it("should stringify LoRA tags", () => {
       const tag = {
-        notation: "lora" as const,
         type: "lora" as const,
         prefix: "lora:" as const,
         name: "example.safetensors",
@@ -347,7 +321,6 @@ describe("tokenizer functionality", () => {
 
     it("should stringify LoRA tags with extra parameters", () => {
       const tag = {
-        notation: "lora" as const,
         type: "lora" as const,
         prefix: "lora:" as const,
         name: "example.safetensors",
@@ -360,7 +333,6 @@ describe("tokenizer functionality", () => {
 
     it("should stringify chant tags", () => {
       const tag = {
-        notation: "default" as const,
         type: "chant" as const,
         prefix: "@" as const,
         name: "quality",
@@ -372,7 +344,6 @@ describe("tokenizer functionality", () => {
 
     it("should stringify embedding tags", () => {
       const tag = {
-        notation: "default" as const,
         type: "embedding" as const,
         prefix: "embedding:" as const,
         name: "example",
@@ -384,7 +355,6 @@ describe("tokenizer functionality", () => {
 
     it("should handle precision formatting", () => {
       const tag = {
-        notation: "default" as const,
         type: "normal" as const,
         prefix: "" as const,
         name: "smile",
@@ -396,7 +366,6 @@ describe("tokenizer functionality", () => {
 
     it("should remove trailing zeros", () => {
       const tag = {
-        notation: "default" as const,
         type: "normal" as const,
         prefix: "" as const,
         name: "smile",
@@ -414,7 +383,6 @@ describe("tokenizer functionality", () => {
       expect(ranges[0]).toEqual({
         text: "1girl",
         token: {
-          notation: "default",
           type: "normal",
           prefix: "",
           name: "1girl",

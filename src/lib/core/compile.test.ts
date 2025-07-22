@@ -13,7 +13,6 @@ describe("compile functionality", () => {
 
     it("should format normal tags", () => {
       const tag = {
-        notation: "default" as const,
         type: "normal" as const,
         prefix: "" as const,
         name: "1girl",
@@ -25,7 +24,6 @@ describe("compile functionality", () => {
 
     it("should format normal tags with weights", () => {
       const tag = {
-        notation: "default" as const,
         type: "normal" as const,
         prefix: "" as const,
         name: "smile",
@@ -37,7 +35,6 @@ describe("compile functionality", () => {
 
     it("should format LoRA tags", () => {
       const tag = {
-        notation: "lora" as const,
         type: "lora" as const,
         prefix: "lora:" as const,
         name: "example.safetensors",
@@ -52,7 +49,6 @@ describe("compile functionality", () => {
 
     it("should format LoRA tags with extra parameters", () => {
       const tag = {
-        notation: "lora" as const,
         type: "lora" as const,
         prefix: "lora:" as const,
         name: "example.safetensors",
@@ -67,7 +63,6 @@ describe("compile functionality", () => {
 
     it("should format embedding tags", () => {
       const tag = {
-        notation: "default" as const,
         type: "embedding" as const,
         prefix: "embedding:" as const,
         name: "example",
@@ -79,7 +74,6 @@ describe("compile functionality", () => {
 
     it("should return null for zero weight", () => {
       const tag = {
-        notation: "default" as const,
         type: "normal" as const,
         prefix: "" as const,
         name: "bad_quality",
@@ -95,7 +89,6 @@ describe("compile functionality", () => {
         escapeTarget: "parentheses",
       };
       const tag = {
-        notation: "default" as const,
         type: "normal" as const,
         prefix: "" as const,
         name: "tag(with)parens",
@@ -107,7 +100,6 @@ describe("compile functionality", () => {
 
     it("should handle precision formatting", () => {
       const tag = {
-        notation: "default" as const,
         type: "normal" as const,
         prefix: "" as const,
         name: "smile",
@@ -119,7 +111,6 @@ describe("compile functionality", () => {
 
     it("should remove trailing zeros", () => {
       const tag = {
-        notation: "default" as const,
         type: "normal" as const,
         prefix: "" as const,
         name: "smile",

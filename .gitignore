@@ -27,3 +27,12 @@ Thumbs.db
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Python
+__pycache__
+.ruff_cache
+.venv
+
+*.pyc
+*.pyd
+*.pyo

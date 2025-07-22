@@ -1,6 +1,5 @@
 export type Tag =
   | {
-      notation: "lora";
       type: "lora";
       prefix: "lora:";
       name: string;
@@ -9,7 +8,6 @@ export type Tag =
       extra: string;
     }
   | {
-      notation: "default";
       type: "normal" | "chant" | "embedding";
       prefix: "" | "@" | "embedding:";
       name: string;
@@ -33,7 +31,6 @@ type UnparsedDefaultTag = {
 function parseDefaultTagDetail(tag: UnparsedDefaultTag): Tag {
   if (tag.name.startsWith("@")) {
     return {
-      notation: "default",
       type: "chant",
       prefix: "@",
       name: tag.name.slice(1),
@@ -43,7 +40,6 @@ function parseDefaultTagDetail(tag: UnparsedDefaultTag): Tag {
   }
 
   return {
-    notation: "default",
     type: "normal",
     prefix: "",
     name: tag.name,
@@ -88,7 +84,6 @@ function parseLoraTag(text: string): Tag | null {
     const extra = loraMatch[3] || "";
     return name && isFinite(weight)
       ? {
-          notation: "lora",
           type: "lora",
           prefix: "lora:",
           name,
@@ -127,7 +122,6 @@ function parseEmbeddingTag(text: string): Tag | null {
       : parseFloat(embeddingMatch[2] || "1.0");
     return name && isFinite(weight)
       ? {
-          notation: "default",
           type: "embedding",
           prefix: "embedding:",
           name,
