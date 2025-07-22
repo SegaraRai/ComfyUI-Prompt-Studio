@@ -551,6 +551,7 @@
             </div>
             <cps-prompt-editor
               bind:this={promptEditorElement}
+              class="overflow-hidden"
               data-theme={theme}
               placeholder={$m["editor.promptPlaceholder"]()}
               mode="prompt"
@@ -585,6 +586,7 @@
                 </h3>
               </div>
               <cps-prompt-editor
+                class="overflow-hidden"
                 data-theme={theme}
                 placeholder={$m["editor.chantsPlaceholder"]()}
                 mode="chants"
