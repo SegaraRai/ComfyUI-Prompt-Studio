@@ -190,22 +190,29 @@ export function init(clientId: string): App {
   });
 
   document.addEventListener("keydown", (event) => {
+    if (document.querySelector("cps-prompt-studio")) {
+      // If a prompt studio is already open, do not open another one
+      // Also, prevent the default behavior of the ComfyUI
+      event.stopImmediatePropagation();
+      return;
+    }
+
     if (!(event.target instanceof HTMLTextAreaElement)) {
       return;
     }
 
     if (matchesCombo(event, "mod+space")) {
       event.preventDefault();
-      event.stopPropagation();
+      event.stopImmediatePropagation();
 
       const element = app.openPromptStudioForTextArea(event.target);
       element.style.zIndex = "99990";
       element.focusOnMount = true;
       element.focus();
 
-      // Prevent `preventDefault` by ComfyUI
+      // Prevent the default keyboard behavior of the ComfyUI
       element.addEventListener("keydown", (event) => {
-        event.stopPropagation();
+        event.stopImmediatePropagation();
       });
     }
   });
