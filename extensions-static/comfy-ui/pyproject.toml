@@ -2,7 +2,7 @@
 
 [project]
 name = "prompt-studio"
-description = "A universal ComfyUI extension that enhances any input field with advanced prompt editing, auto-completion, custom chants, and save/load functionality."
+description = "[BETA] A universal ComfyUI extension that enhances any input field with advanced prompt editing, auto-completion, custom chants, and save/load functionality. This extension requires a build step, so **the nightly version and git clone will NOT work**!"
 version = "0.1.0"
 license = { file = "LICENSE" }
 
