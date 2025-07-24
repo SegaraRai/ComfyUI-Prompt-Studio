@@ -574,6 +574,7 @@
               {resourceDefinition}
               normalizeOnAutoComplete={$settingsEditor.normalizeOnAutoComplete}
               tooltipParent={autoCompleteContainerElement}
+              {store}
               oncps-editor-input={handlePromptEditorEvent}
               oncps-editor-submit={handlePromptEditorEvent}
               oncps-editor-close={handlePromptEditorEvent}
@@ -608,6 +609,7 @@
                 {resourceDefinition}
                 normalizeOnAutoComplete={$settingsEditor.normalizeOnAutoComplete}
                 tooltipParent={autoCompleteContainerElement}
+                {store}
                 oncps-editor-input={handleChantsInput}
                 oncps-editor-submit={focusToPromptEditor}
                 oncps-editor-close={handleClose}

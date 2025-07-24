@@ -114,6 +114,7 @@
     "fontFamily": "フォントファミリー",
     "lineHeight": "行の高さ",
     "normalizeOnAutoComplete": "自動補完時の正規化",
+    "enableWorkflowExecution": "ワークフロー実行を有効化（Ctrl+Enter）",
     "underscore": "アンダースコア",
     "whitespace": "空白文字",
     "compile": "コンパイル",

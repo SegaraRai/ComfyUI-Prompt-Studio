@@ -114,6 +114,7 @@
     "fontFamily": "Font Family",
     "lineHeight": "Line Height",
     "normalizeOnAutoComplete": "Normalize on Auto-Complete",
+    "enableWorkflowExecution": "Enable Workflow Execution (Ctrl+Enter)",
     "underscore": "Underscore",
     "whitespace": "Whitespace",
     "compile": "Compile",

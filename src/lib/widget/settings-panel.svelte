@@ -168,6 +168,23 @@
         <option value="whitespace">{$m["settings.whitespace"]()}</option>
       </select>
     </label>
+    <label class="flex items-center justify-between">
+      <span class="text-base-content/80 text-sm font-medium">
+        {$m["settings.enableWorkflowExecution"]()}
+      </span>
+      <input
+        type="checkbox"
+        class="toggle toggle-sm"
+        bind:checked={
+          () => $settingsEditor.enableWorkflowExecution,
+          (v) =>
+            ($settingsEditor = {
+              ...$settingsEditor,
+              enableWorkflowExecution: v,
+            })
+        }
+      />
+    </label>
   </div>
 
   <!-- Compile Settings -->

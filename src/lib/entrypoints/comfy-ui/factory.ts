@@ -3,6 +3,7 @@ import type { DataSourceSpec } from "../../core/data-source.js";
 import { createApp, type App } from "../../factory.js";
 import { matchesCombo } from "../../key-utils.js";
 import type { StorageLevel } from "../../states/app/storage-utils.js";
+import type { CPSPromptStudioElement } from "../../widget/prompt-studio.svelte";
 import { createComfyUIFileStorage } from "./file-storage.js";
 
 function sleep(ms: number): Promise<void> {
@@ -188,6 +189,68 @@ export function init(clientId: string): App {
       },
     },
   });
+
+  // Override openPromptStudioForTextArea to add workflow execution functionality
+  app.openPromptStudioForTextArea = (targetTextArea: HTMLTextAreaElement) => {
+    const textAreaToCPSMap = new WeakMap<
+      HTMLTextAreaElement,
+      CPSPromptStudioElement
+    >();
+    const existingElement = textAreaToCPSMap.get(targetTextArea);
+    if (existingElement) {
+      existingElement.focus();
+      return existingElement;
+    }
+
+    const element = app.openPromptStudio({
+      value: targetTextArea.value,
+      onInput: (compiledPrompt): void => {
+        targetTextArea.value = compiledPrompt;
+        targetTextArea.dispatchEvent(new Event("input", { bubbles: true }));
+      },
+      onClose: (compiledPrompt): void => {
+        // re-update the textarea value
+        if (compiledPrompt != null) {
+          targetTextArea.value = compiledPrompt;
+          targetTextArea.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+
+        textAreaToCPSMap.delete(targetTextArea);
+        targetTextArea.focus();
+      },
+      onSubmit: (compiledPrompt): void => {
+        // Execute workflow when Ctrl+Enter is pressed (if enabled in settings)
+        if (compiledPrompt != null) {
+          targetTextArea.value = compiledPrompt;
+          targetTextArea.dispatchEvent(new Event("input", { bubbles: true }));
+
+          // Trigger ComfyUI workflow execution
+          executeWorkflow();
+        }
+      },
+    });
+    textAreaToCPSMap.set(targetTextArea, element);
+
+    return element;
+  };
+
+  // Workflow execution function
+  function executeWorkflow() {
+    try {
+      // Find the Queue Prompt button and click it
+      const queueButton = document.querySelector(
+        "#queue-button",
+      ) as HTMLButtonElement;
+      if (queueButton && !queueButton.disabled) {
+        queueButton.click();
+        console.log("ComfyUI workflow queued successfully");
+      } else {
+        console.warn("Queue button not found or disabled");
+      }
+    } catch (error) {
+      console.error("Failed to execute workflow:", error);
+    }
+  }
 
   document.addEventListener("keydown", (event) => {
     if (document.querySelector("cps-prompt-studio")) {

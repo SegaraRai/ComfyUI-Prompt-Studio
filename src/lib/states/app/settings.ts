@@ -11,6 +11,7 @@ export interface SettingsEditor {
   fontFamily: string;
   lineHeight: string;
   normalizeOnAutoComplete: NormalizeOnAutoComplete;
+  enableWorkflowExecution: boolean;
 }
 
 export interface SettingsCompilation {
@@ -33,6 +34,7 @@ const defaultSettingsEditor: SettingsEditor = {
   fontFamily: "monospace",
   lineHeight: "1.5",
   normalizeOnAutoComplete: "underscore",
+  enableWorkflowExecution: false,
 };
 
 const defaultSettingsCompilation: SettingsCompilation = {
