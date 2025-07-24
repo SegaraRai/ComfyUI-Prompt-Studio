@@ -1,11 +1,13 @@
 import { atom, type Getter, type Setter } from "jotai/vanilla";
 import { compilePrompt, type CompileContext } from "../../core/compile.js";
 import { embedOriginalPrompt } from "../../core/restoration.js";
+import { settingsCompilationAtom } from "../app/settings.js";
 import {
   documentContentAtom,
   documentFilenameAtom,
   registerDocumentUpdateCallback,
 } from "./document.js";
+import { appStoreAtom } from "./app-store.js";
 
 export type CompiledPrompt =
   | {
@@ -35,10 +37,16 @@ const triggerCompilation = async (
   }
 
   try {
+    const appStore = get(appStoreAtom);
+    const compilationSettings = appStore?.get(settingsCompilationAtom);
+    
     const compiled = await embedOriginalPrompt(
       promptText,
       compilePrompt(promptText, context),
       get(documentFilenameAtom),
+      { 
+        encodeOriginalForLinkedFiles: compilationSettings?.encodeOriginalForLinkedFiles ?? true 
+      },
     );
     if (
       get(documentContentAtom) === promptText &&

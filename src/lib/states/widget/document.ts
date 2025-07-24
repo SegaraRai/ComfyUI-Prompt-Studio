@@ -1,4 +1,5 @@
 import { atom, type Getter, type Setter } from "jotai/vanilla";
+import { conflictResolutionAtom, restorationStateAtom, type ConflictResolution } from "./restoration.js";
 
 export type DocumentState =
   | {
@@ -68,3 +69,39 @@ export const documentIsDirtyAtom = atom((get) => {
     ? state.content !== state.lastSavedContent
     : false;
 });
+
+// Register callback to handle conflict resolution
+registerDocumentUpdateCallback(
+  (get: Getter, set: Setter, newState, oldState) => {
+    const restorationState = get(restorationStateAtom);
+    
+    // If we have a conflict resolution and the content changed to the restored prompt
+    if (restorationState.state === "idle" && 
+        newState.content !== oldState.content && 
+        restorationState.originalPrompt === newState.content) {
+      
+      const conflictResolution = get(conflictResolutionAtom);
+      
+      // If the user chose to keep the restored prompt as untitled, unlink the document
+      if (conflictResolution === "keep-restored" && newState.type === "linked") {
+        set(documentStateAtom, {
+          type: "unlinked",
+          content: newState.content,
+        });
+      }
+      // If the user chose to use current file content, ensure it stays linked
+      else if (conflictResolution === "use-current-file" && newState.type === "unlinked") {
+        // This shouldn't happen in normal flow but handle it just in case
+        const state = get(restorationStateAtom);
+        if (state.state === "idle" && "conflict" in restorationState && restorationState.conflict) {
+          set(documentStateAtom, {
+            type: "linked",
+            name: restorationState.conflict.filename,
+            content: newState.content,
+            lastSavedContent: restorationState.conflict.currentFileContent,
+          });
+        }
+      }
+    }
+  },
+);

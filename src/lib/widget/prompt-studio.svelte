@@ -105,6 +105,9 @@
     restorationStateAtom,
     restoredPromptAtom,
     valueAtom,
+    hasConflictAtom,
+    conflictResolutionAtom,
+    type ConflictResolution,
   } from "../states/widget/restoration.js";
   import type { CPSPromptListElement } from "./prompt-file-list.svelte";
 
@@ -159,6 +162,8 @@
   const restorationState = $derived(jotai(restorationStateAtom, widgetStore));
   const isRestoring = $derived(jotai(isRestoringAtom, widgetStore));
   const restoredPrompt = $derived(jotai(restoredPromptAtom, widgetStore));
+  const hasConflict = $derived(jotai(hasConflictAtom, widgetStore));
+  const conflictResolution = $derived(jotai(conflictResolutionAtom, widgetStore));
 
   // - Sync external value with internal state
   $effect(() => {
@@ -176,6 +181,11 @@
       $promptText = $restoredPrompt;
     }
   });
+
+  // Conflict resolution handlers
+  const handleConflictResolution = (resolution: ConflictResolution) => {
+    $conflictResolution = resolution;
+  };
 
   // Prompt Compilation
   const promptText = $derived(jotai(documentContentAtom, widgetStore));
@@ -749,6 +759,57 @@
             onclick={handleFilenameConfirm}
           >
             {$m["buttons.save"]()}
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
+
+  {#if $hasConflict && $restorationState.state === "conflict"}
+    <!-- File Content Conflict Dialog -->
+    <div
+      use:focusTrap
+      class="absolute inset-0 z-50 flex items-center justify-center bg-black/50"
+    >
+      <div class="bg-base-100 mx-4 w-full max-w-lg rounded-lg p-6 shadow-lg">
+        <h3 class="mb-4 text-lg font-semibold">
+          File Content Conflict
+        </h3>
+        <p class="mb-4 text-sm text-base-content/70">
+          The file "{$restorationState.conflict.filename}" has been modified since this prompt was saved.
+          Choose which version to use:
+        </p>
+        
+        <div class="mb-6 space-y-4">
+          <div class="border border-base-300 rounded-lg p-3">
+            <h4 class="mb-2 text-sm font-medium">Saved version (original prompt):</h4>
+            <div class="max-h-32 overflow-y-auto rounded bg-base-200 p-2 text-xs font-mono">
+              {$restorationState.conflict.savedPrompt}
+            </div>
+          </div>
+          
+          <div class="border border-base-300 rounded-lg p-3">
+            <h4 class="mb-2 text-sm font-medium">Current file content:</h4>
+            <div class="max-h-32 overflow-y-auto rounded bg-base-200 p-2 text-xs font-mono">
+              {$restorationState.conflict.currentFileContent}
+            </div>
+          </div>
+        </div>
+        
+        <div class="flex justify-end gap-2">
+          <button
+            type="button"
+            class="btn btn-outline"
+            onclick={() => handleConflictResolution("keep-restored")}
+          >
+            Keep saved version as untitled
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            onclick={() => handleConflictResolution("use-current-file")}
+          >
+            Use current file content
           </button>
         </div>
       </div>

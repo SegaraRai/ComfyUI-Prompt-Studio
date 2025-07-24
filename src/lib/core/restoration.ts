@@ -4,13 +4,19 @@ export async function embedOriginalPrompt(
   prompt: string,
   compiledPrompt: string,
   name: string | null,
+  options?: { encodeOriginalForLinkedFiles?: boolean },
 ): Promise<string> {
   // Embed the original prompt encoded at the end
   try {
-    if (name != null) {
-      // Use name-based format for linked files
+    if (name != null && !options?.encodeOriginalForLinkedFiles) {
+      // Use name-based format for linked files (legacy behavior)
       const encodedName = encodeURIComponent(name);
       return `${compiledPrompt}\n\n/*# PROMPT_STUDIO_SRC: FILE:${encodedName} */`.trim();
+    } else if (name != null && options?.encodeOriginalForLinkedFiles) {
+      // Use data encoding with file reference for linked files (new behavior)
+      const encodedOriginal = await encodeText(prompt);
+      const encodedName = encodeURIComponent(name);
+      return `${compiledPrompt}\n\n/*# PROMPT_STUDIO_SRC: FILE_DATA:${encodedName}:${encodedOriginal} */`.trim();
     } else {
       // Use Brotli encoding for non-linked prompts
       const encodedOriginal = await encodeText(prompt);
@@ -23,6 +29,15 @@ export async function embedOriginalPrompt(
   }
 }
 
+export interface RestorationResult {
+  originalPrompt: string;
+  conflict?: {
+    savedPrompt: string;
+    currentFileContent: string;
+    filename: string;
+  };
+}
+
 /**
  * Extract the original prompt from compiled text that contains embedded source
  */
@@ -31,7 +46,21 @@ export async function extractOriginalPrompt(
   fileAPI: {
     load: (name: string) => Promise<string>;
   } | null,
-): Promise<string | null> {
+): Promise<string | null>;
+export async function extractOriginalPrompt(
+  compiledText: string,
+  fileAPI: {
+    load: (name: string) => Promise<string>;
+  } | null,
+  returnConflictInfo: true,
+): Promise<RestorationResult | null>;
+export async function extractOriginalPrompt(
+  compiledText: string,
+  fileAPI: {
+    load: (name: string) => Promise<string>;
+  } | null,
+  returnConflictInfo?: boolean,
+): Promise<string | RestorationResult | null> {
   const match = /\/\*# PROMPT_STUDIO_SRC: (.+?) \*\//.exec(compiledText);
   if (!match) {
     return null;
@@ -40,15 +69,54 @@ export async function extractOriginalPrompt(
   try {
     const encodedData = match[1];
 
-    // Check if it's a FILE: reference
-    if (encodedData.startsWith("FILE:")) {
-      const name = decodeURIComponent(encodedData.substring(5));
+    // Check if it's a FILE_DATA: reference (new format with embedded content)
+    if (encodedData.startsWith("FILE_DATA:")) {
+      const parts = encodedData.substring(10).split(":");
+      if (parts.length !== 2) {
+        console.warn("Invalid FILE_DATA format");
+        return null;
+      }
+      
+      const filename = decodeURIComponent(parts[0]);
+      const savedPrompt = await decodeText(parts[1]);
+      
+      if (fileAPI && returnConflictInfo) {
+        try {
+          const currentFileContent = await fileAPI.load(filename);
+          if (currentFileContent !== savedPrompt) {
+            return {
+              originalPrompt: savedPrompt,
+              conflict: {
+                savedPrompt,
+                currentFileContent,
+                filename,
+              },
+            };
+          }
+        } catch (error) {
+          // File doesn't exist, no conflict but return saved prompt
+          console.warn(`File ${filename} not found during restoration:`, error);
+          return returnConflictInfo 
+            ? { originalPrompt: savedPrompt }
+            : savedPrompt;
+        }
+      }
+      
+      return returnConflictInfo 
+        ? { originalPrompt: savedPrompt }
+        : savedPrompt;
+    }
+    // Check if it's a FILE: reference (legacy format)
+    else if (encodedData.startsWith("FILE:")) {
+      const filename = decodeURIComponent(encodedData.substring(5));
       if (fileAPI) {
         try {
-          const result = await fileAPI.load(name);
-          return result;
+          const currentFileContent = await fileAPI.load(filename);
+          return returnConflictInfo 
+            ? { originalPrompt: currentFileContent }
+            : currentFileContent;
         } catch (error) {
-          console.warn(`Failed to load file ${name}:`, error);
+          console.warn(`Failed to load file ${filename}:`, error);
           return null;
         }
       } else {
@@ -57,7 +125,10 @@ export async function extractOriginalPrompt(
       }
     } else {
       // Legacy Brotli encoding
-      return await decodeText(encodedData.replace(/^DATA:/, ""));
+      const savedPrompt = await decodeText(encodedData.replace(/^DATA:/, ""));
+      return returnConflictInfo 
+        ? { originalPrompt: savedPrompt }
+        : savedPrompt;
     }
   } catch (error) {
     console.warn("Failed to decode embedded original prompt:", error);
