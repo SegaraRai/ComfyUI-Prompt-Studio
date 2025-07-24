@@ -83,6 +83,10 @@
       | EventHandler<Event, CPSPromptEditorElement>
       | null
       | undefined;
+    "oncps-editor-close"?:
+      | EventHandler<Event, CPSPromptEditorElement>
+      | null
+      | undefined;
     "oncps-editor-save"?:
       | EventHandler<Event, CPSPromptEditorElement>
       | null
@@ -188,6 +192,13 @@
       key: "Mod-Enter",
       run: () => {
         $host().dispatchEvent(new Event("cps-editor-submit"));
+        return true;
+      },
+    },
+    {
+      key: "Escape",
+      run: () => {
+        $host().dispatchEvent(new Event("cps-editor-close"));
         return true;
       },
     },

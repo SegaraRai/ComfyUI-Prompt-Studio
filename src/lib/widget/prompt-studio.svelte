@@ -50,6 +50,10 @@
       | EventHandler<Event, CPSPromptStudioElement>
       | null
       | undefined;
+    "oncps-submit"?:
+      | EventHandler<Event, CPSPromptStudioElement>
+      | null
+      | undefined;
     "oncps-close"?:
       | EventHandler<Event, CPSPromptStudioElement>
       | null
@@ -414,12 +418,25 @@
         handlePromptInput(event);
         break;
       case "cps-editor-submit":
+        handleSubmit();
+        break;
+      case "cps-editor-close":
         handleClose();
         break;
     }
   };
 
-  // Application Control
+  // Global keyboard handling
+  const handleGlobalKeydown = (event: KeyboardEvent) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      handleClose();
+    }
+  };
+  const handleSubmit = () => {
+    $host().dispatchEvent(new Event("cps-submit"));
+  };
+
   const handleClose = () => {
     $host().dispatchEvent(new Event("cps-close"));
   };
@@ -449,6 +466,7 @@
     "--editor-font-family": $settingsEditor.fontFamily,
     "--editor-line-height": $settingsEditor.lineHeight,
   }}
+  onkeydown={handleGlobalKeydown}
 >
   <div
     class="modal-box bg-base-200 text-base-content relative mt-4 grid h-[calc(100vh-var(--spacing)*8)] w-320 max-w-[calc(100vw-var(--spacing)*10)] overflow-visible"
@@ -566,6 +584,7 @@
               tooltipParent={autoCompleteContainerElement}
               oncps-editor-input={handlePromptEditorEvent}
               oncps-editor-submit={handlePromptEditorEvent}
+              oncps-editor-close={handlePromptEditorEvent}
               oncps-editor-save={handlePromptEditorEvent}
               oncps-editor-save-as={handlePromptEditorEvent}
               oncps-editor-new={handlePromptEditorEvent}
@@ -599,6 +618,7 @@
                 tooltipParent={autoCompleteContainerElement}
                 oncps-editor-input={handleChantsInput}
                 oncps-editor-submit={focusToPromptEditor}
+                oncps-editor-close={handleClose}
                 oncps-editor-autocompletion={(event) => {
                   autoCompletingChantsEditor = event.detail.active;
                 }}
