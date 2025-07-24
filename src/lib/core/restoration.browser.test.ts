@@ -3,7 +3,7 @@ import { embedOriginalPrompt, extractOriginalPrompt, type RestorationResult } fr
 
 describe("restoration functions (browser)", () => {
   describe("embedOriginalPrompt", () => {
-    it("should embed original prompt into compiled prompt with FILE_DATA format when enabled", async () => {
+    it("should embed original prompt into compiled prompt with FILE_DATA format for linked files", async () => {
       const originalPrompt = "1girl, smile, looking at viewer";
       const compiledPrompt =
         "masterpiece, best quality, 1girl, smile, looking at viewer";
@@ -13,30 +13,11 @@ describe("restoration functions (browser)", () => {
         originalPrompt,
         compiledPrompt,
         filename,
-        { encodeOriginalForLinkedFiles: true },
       );
 
       expect(result).toContain(compiledPrompt);
       expect(result).toMatch(/\/\*# PROMPT_STUDIO_SRC: FILE_DATA:.+ \*\/$/);
       expect(result).toContain(`FILE_DATA:${encodeURIComponent(filename)}:`);
-    });
-
-    it("should use legacy FILE format when encodeOriginalForLinkedFiles is false", async () => {
-      const originalPrompt = "1girl, smile, looking at viewer";
-      const compiledPrompt =
-        "masterpiece, best quality, 1girl, smile, looking at viewer";
-      const filename = "test.txt";
-
-      const result = await embedOriginalPrompt(
-        originalPrompt,
-        compiledPrompt,
-        filename,
-        { encodeOriginalForLinkedFiles: false },
-      );
-
-      expect(result).toContain(compiledPrompt);
-      expect(result).toMatch(/\/\*# PROMPT_STUDIO_SRC: FILE:.+ \*\/$/);
-      expect(result).toContain(`FILE:${encodeURIComponent(filename)}`);
     });
 
     it("should handle empty original prompt", async () => {
@@ -140,7 +121,6 @@ describe("restoration functions (browser)", () => {
         originalPrompt,
         compiledPrompt,
         filename,
-        { encodeOriginalForLinkedFiles: true },
       );
       const extracted = await extractOriginalPrompt(embedded, null);
 

@@ -4,16 +4,11 @@ export async function embedOriginalPrompt(
   prompt: string,
   compiledPrompt: string,
   name: string | null,
-  options?: { encodeOriginalForLinkedFiles?: boolean },
 ): Promise<string> {
   // Embed the original prompt encoded at the end
   try {
-    if (name != null && !options?.encodeOriginalForLinkedFiles) {
-      // Use name-based format for linked files (legacy behavior)
-      const encodedName = encodeURIComponent(name);
-      return `${compiledPrompt}\n\n/*# PROMPT_STUDIO_SRC: FILE:${encodedName} */`.trim();
-    } else if (name != null && options?.encodeOriginalForLinkedFiles) {
-      // Use data encoding with file reference for linked files (new behavior)
+    if (name != null) {
+      // Always use data encoding with file reference for linked files
       const encodedOriginal = await encodeText(prompt);
       const encodedName = encodeURIComponent(name);
       return `${compiledPrompt}\n\n/*# PROMPT_STUDIO_SRC: FILE_DATA:${encodedName}:${encodedOriginal} */`.trim();
@@ -107,26 +102,8 @@ export async function extractOriginalPrompt(
       return returnConflictInfo 
         ? { originalPrompt: savedPrompt }
         : savedPrompt;
-    }
-    // Check if it's a FILE: reference (legacy format)
-    else if (encodedData.startsWith("FILE:")) {
-      const filename = decodeURIComponent(encodedData.substring(5));
-      if (fileAPI) {
-        try {
-          const currentFileContent = await fileAPI.load(filename);
-          return returnConflictInfo 
-            ? { originalPrompt: currentFileContent }
-            : currentFileContent;
-        } catch (error) {
-          console.warn(`Failed to load file ${filename}:`, error);
-          return null;
-        }
-      } else {
-        console.warn("File reference found but no file API provided");
-        return null;
-      }
     } else {
-      // Legacy Brotli encoding
+      // Legacy Brotli encoding for DATA: format
       const savedPrompt = await decodeText(encodedData.replace(/^DATA:/, ""));
       return returnConflictInfo 
         ? { originalPrompt: savedPrompt }

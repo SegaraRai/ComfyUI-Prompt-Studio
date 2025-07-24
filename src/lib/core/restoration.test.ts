@@ -9,7 +9,7 @@ vi.mock("../wasm/coding.js", () => ({
 
 describe("restoration functions", () => {
   describe("embedOriginalPrompt", () => {
-    it("should embed original prompt with FILE_DATA format when enabled", async () => {
+    it("should embed original prompt with FILE_DATA format for linked files", async () => {
       const originalPrompt = "1girl, smile, looking at viewer";
       const compiledPrompt = "masterpiece, best quality, 1girl, smile, looking at viewer";
       const filename = "test.txt";
@@ -18,29 +18,11 @@ describe("restoration functions", () => {
         originalPrompt,
         compiledPrompt,
         filename,
-        { encodeOriginalForLinkedFiles: true },
       );
 
       expect(result).toContain(compiledPrompt);
       expect(result).toMatch(/\/\*# PROMPT_STUDIO_SRC: FILE_DATA:.+ \*\/$/);
       expect(result).toContain(`FILE_DATA:${encodeURIComponent(filename)}:`);
-    });
-
-    it("should use legacy FILE format when encodeOriginalForLinkedFiles is false", async () => {
-      const originalPrompt = "1girl, smile, looking at viewer";
-      const compiledPrompt = "masterpiece, best quality, 1girl, smile, looking at viewer";
-      const filename = "test.txt";
-
-      const result = await embedOriginalPrompt(
-        originalPrompt,
-        compiledPrompt,
-        filename,
-        { encodeOriginalForLinkedFiles: false },
-      );
-
-      expect(result).toContain(compiledPrompt);
-      expect(result).toMatch(/\/\*# PROMPT_STUDIO_SRC: FILE:.+ \*\/$/);
-      expect(result).toContain(`FILE:${encodeURIComponent(filename)}`);
     });
 
     it("should use DATA format for unlinked prompts", async () => {
@@ -85,7 +67,6 @@ describe("restoration functions", () => {
         originalPrompt,
         compiledPrompt,
         filename,
-        { encodeOriginalForLinkedFiles: true },
       );
 
       const mockFileAPI = {
@@ -116,7 +97,6 @@ describe("restoration functions", () => {
         originalPrompt,
         compiledPrompt,
         filename,
-        { encodeOriginalForLinkedFiles: true },
       );
 
       const mockFileAPI = {
@@ -144,7 +124,6 @@ describe("restoration functions", () => {
         originalPrompt,
         compiledPrompt,
         filename,
-        { encodeOriginalForLinkedFiles: true },
       );
 
       const mockFileAPI = {
@@ -158,25 +137,6 @@ describe("restoration functions", () => {
       expect(result).not.toBeNull();
       expect(result.originalPrompt).toBe(originalPrompt);
       expect(result.conflict).toBeUndefined();
-    });
-
-    it("should handle legacy FILE format", async () => {
-      const currentFileContent = "1girl, smile, looking at viewer";
-      const filename = "test.txt";
-      const compiledText = `masterpiece, best quality, 1girl, smile, looking at viewer\n\n/*# PROMPT_STUDIO_SRC: FILE:${encodeURIComponent(filename)} */`;
-
-      const mockFileAPI = {
-        load: async (name: string) => {
-          if (name === filename) {
-            return currentFileContent;
-          }
-          throw new Error("File not found");
-        },
-      };
-
-      const result = await extractOriginalPrompt(compiledText, mockFileAPI);
-
-      expect(result).toBe(currentFileContent);
     });
 
     it("should handle DATA format", async () => {

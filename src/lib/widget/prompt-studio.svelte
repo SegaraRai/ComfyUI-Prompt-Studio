@@ -107,6 +107,7 @@
     valueAtom,
     hasConflictAtom,
     conflictResolutionAtom,
+    shouldClearUndoHistoryAtom,
     type ConflictResolution,
   } from "../states/widget/restoration.js";
   import type { CPSPromptListElement } from "./prompt-file-list.svelte";
@@ -164,6 +165,7 @@
   const restoredPrompt = $derived(jotai(restoredPromptAtom, widgetStore));
   const hasConflict = $derived(jotai(hasConflictAtom, widgetStore));
   const conflictResolution = $derived(jotai(conflictResolutionAtom, widgetStore));
+  const shouldClearUndoHistory = $derived(jotai(shouldClearUndoHistoryAtom, widgetStore));
 
   // - Sync external value with internal state
   $effect(() => {
@@ -182,14 +184,27 @@
     }
   });
 
+  // - Clear undo history when restoration completes
+  $effect(() => {
+    if ($shouldClearUndoHistory) {
+      // Clear the undo history by calling the editor's method
+      if (promptEditorElement?.clearUndoHistory) {
+        promptEditorElement.clearUndoHistory();
+      }
+      // Reset the flag
+      $shouldClearUndoHistory = false;
+    }
+  });
+
   // Conflict resolution handlers
   const handleConflictResolution = (resolution: ConflictResolution) => {
-    const conflict = $restorationState.state === "conflict" ? $restorationState.conflict : null;
+    const state = $restorationState;
     
     $conflictResolution = resolution;
     
     // Handle document state changes based on resolution
-    if (conflict) {
+    if (state.state === "conflict") {
+      const conflict = state.conflict;
       if (resolution === "keep-restored") {
         // Unlink the document when keeping restored version
         $documentState = {
@@ -203,6 +218,21 @@
           name: conflict.filename,
           content: conflict.currentFileContent,
           lastSavedContent: conflict.currentFileContent,
+        };
+      }
+    } else if (state.state === "editing-conflict") {
+      const conflict = state.conflict;
+      if (resolution === "keep-current-edit") {
+        // Keep the current edited content
+        $documentState = {
+          ...$documentState,
+          content: conflict.currentContent,
+        };
+      } else if (resolution === "use-restored") {
+        // Use the restored content
+        $documentState = {
+          ...$documentState,
+          content: conflict.restoredContent,
         };
       }
     }
@@ -831,6 +861,57 @@
             onclick={() => handleConflictResolution("use-current-file")}
           >
             Use current file content
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
+
+  {#if $hasConflict && $restorationState.state === "editing-conflict"}
+    <!-- Editing Conflict Dialog -->
+    <div
+      use:focusTrap
+      class="absolute inset-0 z-50 flex items-center justify-center bg-black/50"
+    >
+      <div class="bg-base-100 mx-4 w-full max-w-lg rounded-lg p-6 shadow-lg">
+        <h3 class="mb-4 text-lg font-semibold">
+          Content Conflict
+        </h3>
+        <p class="mb-4 text-sm text-base-content/70">
+          You have unsaved changes that differ from the content being restored.
+          Choose which version to use:
+        </p>
+        
+        <div class="mb-6 space-y-4">
+          <div class="border border-base-300 rounded-lg p-3">
+            <h4 class="mb-2 text-sm font-medium">Your current changes:</h4>
+            <div class="max-h-32 overflow-y-auto rounded bg-base-200 p-2 text-xs font-mono">
+              {$restorationState.conflict.currentContent}
+            </div>
+          </div>
+          
+          <div class="border border-base-300 rounded-lg p-3">
+            <h4 class="mb-2 text-sm font-medium">Restored content:</h4>
+            <div class="max-h-32 overflow-y-auto rounded bg-base-200 p-2 text-xs font-mono">
+              {$restorationState.conflict.restoredContent}
+            </div>
+          </div>
+        </div>
+        
+        <div class="flex justify-end gap-2">
+          <button
+            type="button"
+            class="btn btn-outline"
+            onclick={() => handleConflictResolution("keep-current-edit")}
+          >
+            Keep current changes
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            onclick={() => handleConflictResolution("use-restored")}
+          >
+            Use restored content
           </button>
         </div>
       </div>

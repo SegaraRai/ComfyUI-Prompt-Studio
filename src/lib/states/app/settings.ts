@@ -17,7 +17,6 @@ export interface SettingsCompilation {
   normalize: "none" | "underscore" | "whitespace";
   escapeTarget: "none" | "parentheses";
   duplicateTagHandling: "overwrite" | "ignore" | "add" | "multiply";
-  encodeOriginalForLinkedFiles: boolean;
 }
 
 export interface SettingsData {
@@ -40,7 +39,6 @@ const defaultSettingsCompilation: SettingsCompilation = {
   normalize: "underscore",
   escapeTarget: "none",
   duplicateTagHandling: "overwrite",
-  encodeOriginalForLinkedFiles: true,
 };
 
 const defaultSettingsData: SettingsData = {
