@@ -184,7 +184,28 @@
 
   // Conflict resolution handlers
   const handleConflictResolution = (resolution: ConflictResolution) => {
+    const conflict = $restorationState.state === "conflict" ? $restorationState.conflict : null;
+    
     $conflictResolution = resolution;
+    
+    // Handle document state changes based on resolution
+    if (conflict) {
+      if (resolution === "keep-restored") {
+        // Unlink the document when keeping restored version
+        $documentState = {
+          type: "unlinked",
+          content: conflict.savedPrompt,
+        };
+      } else if (resolution === "use-current-file") {
+        // Keep linked to the file when using current file content
+        $documentState = {
+          type: "linked",
+          name: conflict.filename,
+          content: conflict.currentFileContent,
+          lastSavedContent: conflict.currentFileContent,
+        };
+      }
+    }
   };
 
   // Prompt Compilation

@@ -71,14 +71,16 @@ export async function extractOriginalPrompt(
 
     // Check if it's a FILE_DATA: reference (new format with embedded content)
     if (encodedData.startsWith("FILE_DATA:")) {
-      const parts = encodedData.substring(10).split(":");
-      if (parts.length !== 2) {
-        console.warn("Invalid FILE_DATA format");
+      const restOfData = encodedData.substring(10); // Remove "FILE_DATA:"
+      const colonIndex = restOfData.indexOf(":");
+      if (colonIndex === -1) {
+        console.warn("Invalid FILE_DATA format: missing colon separator");
         return null;
       }
       
-      const filename = decodeURIComponent(parts[0]);
-      const savedPrompt = await decodeText(parts[1]);
+      const filename = decodeURIComponent(restOfData.substring(0, colonIndex));
+      const encodedContent = restOfData.substring(colonIndex + 1);
+      const savedPrompt = await decodeText(encodedContent);
       
       if (fileAPI && returnConflictInfo) {
         try {
