@@ -66,7 +66,7 @@
   }
 </script>
 
-<div class="space-y-6 **:[input,select]:w-60">
+<div class="**:[input,select]:not([type=checkbox]):w-60 space-y-6">
   <!-- Appearance Settings -->
   <div class="space-y-3">
     <h4 class="text-base font-semibold">{$m["settings.appearance"]()}</h4>
@@ -172,9 +172,10 @@
       <span class="text-base-content/80 text-sm font-medium">
         {$m["settings.enableWorkflowExecution"]()}
       </span>
+      <!-- The base (md) size is more suitable than the sm size for toggles -->
       <input
         type="checkbox"
-        class="toggle toggle-sm"
+        class="toggle"
         bind:checked={
           () => $settingsEditor.enableWorkflowExecution,
           (v) =>
