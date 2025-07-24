@@ -253,10 +253,10 @@ class InlayHintWidget extends WidgetType {
   toDOM() {
     const hint = document.createElement("span");
     hint.className = tw(
-      "pointer-events-auto pr-0.5 pl-1.5 text-(length:--hint-font-size) italic opacity-60 select-none",
+      "pointer-events-auto pr-0.5 pl-1.5 text-(length:--hint-font-size) italic opacity-60 select-none before:content-[attr(aria-label)]",
     );
     hint.title = this.#hint;
-    hint.textContent = this.#text;
+    hint.ariaLabel = this.#text;
     return hint;
   }
 }
