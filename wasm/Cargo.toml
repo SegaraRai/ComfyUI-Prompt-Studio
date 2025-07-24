@@ -22,3 +22,6 @@ web-time = "1.1"
 [features]
 default = []
 profiling = []
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false
