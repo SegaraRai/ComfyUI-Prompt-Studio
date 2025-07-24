@@ -8,9 +8,10 @@ export async function embedOriginalPrompt(
   // Embed the original prompt encoded at the end
   try {
     if (name != null) {
-      // Use name-based format for linked files
+      // Always use data encoding with file reference for linked files
+      const encodedOriginal = await encodeText(prompt);
       const encodedName = encodeURIComponent(name);
-      return `${compiledPrompt}\n\n/*# PROMPT_STUDIO_SRC: FILE:${encodedName} */`.trim();
+      return `${compiledPrompt}\n\n/*# PROMPT_STUDIO_SRC: FILE_DATA:${encodedName}:${encodedOriginal} */`.trim();
     } else {
       // Use Brotli encoding for non-linked prompts
       const encodedOriginal = await encodeText(prompt);
@@ -23,6 +24,15 @@ export async function embedOriginalPrompt(
   }
 }
 
+export interface RestorationResult {
+  originalPrompt: string;
+  conflict?: {
+    savedPrompt: string;
+    currentFileContent: string;
+    filename: string;
+  };
+}
+
 /**
  * Extract the original prompt from compiled text that contains embedded source
  */
@@ -31,7 +41,21 @@ export async function extractOriginalPrompt(
   fileAPI: {
     load: (name: string) => Promise<string>;
   } | null,
-): Promise<string | null> {
+): Promise<string | null>;
+export async function extractOriginalPrompt(
+  compiledText: string,
+  fileAPI: {
+    load: (name: string) => Promise<string>;
+  } | null,
+  returnConflictInfo: true,
+): Promise<RestorationResult | null>;
+export async function extractOriginalPrompt(
+  compiledText: string,
+  fileAPI: {
+    load: (name: string) => Promise<string>;
+  } | null,
+  returnConflictInfo?: boolean,
+): Promise<string | RestorationResult | null> {
   const match = /\/\*# PROMPT_STUDIO_SRC: (.+?) \*\//.exec(compiledText);
   if (!match) {
     return null;
@@ -40,24 +64,50 @@ export async function extractOriginalPrompt(
   try {
     const encodedData = match[1];
 
-    // Check if it's a FILE: reference
-    if (encodedData.startsWith("FILE:")) {
-      const name = decodeURIComponent(encodedData.substring(5));
-      if (fileAPI) {
-        try {
-          const result = await fileAPI.load(name);
-          return result;
-        } catch (error) {
-          console.warn(`Failed to load file ${name}:`, error);
-          return null;
-        }
-      } else {
-        console.warn("File reference found but no file API provided");
+    // Check if it's a FILE_DATA: reference (new format with embedded content)
+    if (encodedData.startsWith("FILE_DATA:")) {
+      const restOfData = encodedData.substring(10); // Remove "FILE_DATA:"
+      const colonIndex = restOfData.indexOf(":");
+      if (colonIndex === -1) {
+        console.warn("Invalid FILE_DATA format: missing colon separator");
         return null;
       }
+      
+      const filename = decodeURIComponent(restOfData.substring(0, colonIndex));
+      const encodedContent = restOfData.substring(colonIndex + 1);
+      const savedPrompt = await decodeText(encodedContent);
+      
+      if (fileAPI && returnConflictInfo) {
+        try {
+          const currentFileContent = await fileAPI.load(filename);
+          if (currentFileContent !== savedPrompt) {
+            return {
+              originalPrompt: savedPrompt,
+              conflict: {
+                savedPrompt,
+                currentFileContent,
+                filename,
+              },
+            };
+          }
+        } catch (error) {
+          // File doesn't exist, no conflict but return saved prompt
+          console.warn(`File ${filename} not found during restoration:`, error);
+          return returnConflictInfo 
+            ? { originalPrompt: savedPrompt }
+            : savedPrompt;
+        }
+      }
+      
+      return returnConflictInfo 
+        ? { originalPrompt: savedPrompt }
+        : savedPrompt;
     } else {
-      // Legacy Brotli encoding
-      return await decodeText(encodedData.replace(/^DATA:/, ""));
+      // Legacy Brotli encoding for DATA: format
+      const savedPrompt = await decodeText(encodedData.replace(/^DATA:/, ""));
+      return returnConflictInfo 
+        ? { originalPrompt: savedPrompt }
+        : savedPrompt;
     }
   } catch (error) {
     console.warn("Failed to decode embedded original prompt:", error);

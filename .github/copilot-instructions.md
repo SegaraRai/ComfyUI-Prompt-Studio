@@ -291,6 +291,7 @@ src/lib/
 3. **Before committing**: Ensure all guidelines are followed
 4. **After i18n changes**: Run `pnpm run build` to update type definitions
 5. **Testing**: Verify Web Components work correctly in isolation and integration
+6. **Before completing**: Run `pnpm run format` then `pnpm run lint` then `pnpm run test` to ensure code quality
 
 ## Quality Standards
 
@@ -299,3 +300,4 @@ src/lib/
 - Follow consistent naming conventions
 - Ensure accessibility standards are met
 - Test components in both development and production builds
+- **Prioritize code simplicity**: Discard all backward compatibility except for settings. For code that includes tests, keep only the bare minimum essentials necessary for proper functionality

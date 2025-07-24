@@ -6,6 +6,7 @@ import {
   documentFilenameAtom,
   registerDocumentUpdateCallback,
 } from "./document.js";
+import { appStoreAtom } from "./app-store.js";
 
 export type CompiledPrompt =
   | {

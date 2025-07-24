@@ -3,6 +3,8 @@
     tag: "cps-prompt-editor",
     extend: (cls) => {
       return class extends cls {
+        #view?: EditorView;
+
         constructor() {
           super();
 
@@ -27,6 +29,19 @@
           this.shadowRoot
             ?.querySelector<HTMLDivElement>(".cm-content")
             ?.focus(options);
+        }
+
+        clearUndoHistory(): void {
+          if (this.#view) {
+            // Clear history by dispatching an isolateHistory effect
+            this.#view.dispatch({
+              effects: isolateHistory.of("full"),
+            });
+          }
+        }
+
+        _setView(view: EditorView | undefined): void {
+          this.#view = view;
         }
       };
     },
@@ -58,6 +73,8 @@
     tooltipParent: HTMLElement | null;
 
     override focus(options?: FocusOptions): void;
+    clearUndoHistory(): void;
+    _setView(view: EditorView | undefined): void;
   }
 
   export interface CPSPromptEditorAttributes
@@ -118,6 +135,7 @@
     history,
     redo,
     historyKeymap,
+    isolateHistory,
   } from "@codemirror/commands";
   import { EditorState, StateEffect, type Extension } from "@codemirror/state";
   import {
@@ -374,6 +392,9 @@
       parent: editorElement,
     });
 
+    // Set the view reference in the custom element
+    ($host() as any)._setView(view);
+
     if (focusOnMount) {
       const until = Date.now() + 1000;
       const trySetFocus = () => {
@@ -391,6 +412,8 @@
     return () => {
       view?.destroy();
       view = undefined;
+      // Clear the view reference in the custom element
+      ($host() as any)._setView(undefined);
     };
   });
 </script>
