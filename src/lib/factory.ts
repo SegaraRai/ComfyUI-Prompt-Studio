@@ -34,6 +34,7 @@ export interface App {
   openPromptStudio: (options: {
     onInput?: (compiledPrompt: string) => void;
     onClose?: () => void;
+    onSubmit?: (compiledPrompt: string | null) => void;
   }) => CPSPromptStudioElement;
   openPromptStudioForTextArea: (
     targetTextArea: HTMLTextAreaElement,
@@ -111,10 +112,12 @@ export function createApp(appOptions: AppOptions): App {
     value,
     onInput,
     onClose,
+    onSubmit,
   }: {
     value?: string;
     onInput?: (compiledPrompt: string) => void;
     onClose?: (compiledPrompt: string | null) => void;
+    onSubmit?: (compiledPrompt: string | null) => void;
   }): CPSPromptStudioElement => {
     const elementController = new AbortController();
     const { signal: elementSignal } = elementController;
@@ -139,6 +142,10 @@ export function createApp(appOptions: AppOptions): App {
     promptStudioElement.addEventListener("cps-close", () => {
       onClose?.(promptStudioElement.compiledPrompt?.text ?? null);
       elementController.abort();
+    });
+
+    promptStudioElement.addEventListener("cps-submit", () => {
+      onSubmit?.(promptStudioElement.compiledPrompt?.text ?? null);
     });
 
     elementSignal.addEventListener(

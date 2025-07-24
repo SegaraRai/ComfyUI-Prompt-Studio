@@ -56,6 +56,7 @@
     resourceDefinition: ResourceDefinition;
     normalizeOnAutoComplete: NormalizeOnAutoComplete;
     tooltipParent: HTMLElement | null;
+    store: ReturnType<typeof createStore>;
 
     override focus(options?: FocusOptions): void;
   }
@@ -74,12 +75,17 @@
     resourceDefinition: ResourceDefinition;
     normalizeOnAutoComplete: NormalizeOnAutoComplete;
     tooltipParent?: HTMLElement | null | undefined;
+    store: ReturnType<typeof createStore>;
 
     "oncps-editor-input"?:
       | EventHandler<Event, CPSPromptEditorElement>
       | null
       | undefined;
     "oncps-editor-submit"?:
+      | EventHandler<Event, CPSPromptEditorElement>
+      | null
+      | undefined;
+    "oncps-editor-close"?:
       | EventHandler<Event, CPSPromptEditorElement>
       | null
       | undefined;
@@ -128,10 +134,13 @@
     tooltips,
   } from "@codemirror/view";
   import { onMount } from "svelte";
+  import type { createStore } from "jotai/vanilla";
   import { initializeComponentStylesheet } from "../component-utils.js";
   import type { ChantDefinition } from "../core/chants.js";
   import type { ResourceDefinition } from "../core/resources.js";
   import type { IDictionaryEngine } from "../wasm/dictionary-engine/interface.js";
+  import { jotai } from "../jotai-to-svelte-store.js";
+  import { settingsEditorAtom } from "../states/app/settings.js";
   import {
     commentPlugin,
     contextUpdateEffect,
@@ -154,6 +163,7 @@
     disabled = false,
     focusOnMount = false,
     mode = "prompt",
+    store,
   }: {
     i18n: typeof import("../../paraglide/messages.js").m;
     dictionaryEngine: IDictionaryEngine;
@@ -166,11 +176,15 @@
     disabled?: boolean;
     focusOnMount?: boolean;
     mode?: "prompt" | "chants";
+    store: ReturnType<typeof createStore>;
   } = $props();
 
   let editorElement: HTMLDivElement;
   let view = $state<EditorView>();
   let isCompletionActive = $state(false);
+
+  // Access settings to check if workflow execution is enabled
+  const settingsEditor = $derived(jotai(settingsEditorAtom, store));
 
   const getContext = (): PluginContext => ({
     i18n,
@@ -187,7 +201,17 @@
     {
       key: "Mod-Enter",
       run: () => {
-        $host().dispatchEvent(new Event("cps-editor-submit"));
+        // Only dispatch submit event if workflow execution is enabled
+        if ($settingsEditor.enableWorkflowExecution) {
+          $host().dispatchEvent(new Event("cps-editor-submit"));
+        }
+        return true;
+      },
+    },
+    {
+      key: "Escape",
+      run: () => {
+        $host().dispatchEvent(new Event("cps-editor-close"));
         return true;
       },
     },

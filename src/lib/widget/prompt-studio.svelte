@@ -50,6 +50,10 @@
       | EventHandler<Event, CPSPromptStudioElement>
       | null
       | undefined;
+    "oncps-submit"?:
+      | EventHandler<Event, CPSPromptStudioElement>
+      | null
+      | undefined;
     "oncps-close"?:
       | EventHandler<Event, CPSPromptStudioElement>
       | null
@@ -414,12 +418,18 @@
         handlePromptInput(event);
         break;
       case "cps-editor-submit":
+        handleSubmit();
+        break;
+      case "cps-editor-close":
         handleClose();
         break;
     }
   };
 
-  // Application Control
+  const handleSubmit = () => {
+    $host().dispatchEvent(new Event("cps-submit"));
+  };
+
   const handleClose = () => {
     $host().dispatchEvent(new Event("cps-close"));
   };
@@ -564,8 +574,10 @@
               {resourceDefinition}
               normalizeOnAutoComplete={$settingsEditor.normalizeOnAutoComplete}
               tooltipParent={autoCompleteContainerElement}
+              {store}
               oncps-editor-input={handlePromptEditorEvent}
               oncps-editor-submit={handlePromptEditorEvent}
+              oncps-editor-close={handlePromptEditorEvent}
               oncps-editor-save={handlePromptEditorEvent}
               oncps-editor-save-as={handlePromptEditorEvent}
               oncps-editor-new={handlePromptEditorEvent}
@@ -597,8 +609,10 @@
                 {resourceDefinition}
                 normalizeOnAutoComplete={$settingsEditor.normalizeOnAutoComplete}
                 tooltipParent={autoCompleteContainerElement}
+                {store}
                 oncps-editor-input={handleChantsInput}
                 oncps-editor-submit={focusToPromptEditor}
+                oncps-editor-close={handleClose}
                 oncps-editor-autocompletion={(event) => {
                   autoCompletingChantsEditor = event.detail.active;
                 }}
