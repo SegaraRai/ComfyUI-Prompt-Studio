@@ -291,6 +291,7 @@ src/lib/
 3. **Before committing**: Ensure all guidelines are followed
 4. **After i18n changes**: Run `pnpm run build` to update type definitions
 5. **Testing**: Verify Web Components work correctly in isolation and integration
+6. **Before completing**: Run `pnpm run format` then `pnpm run lint` then `pnpm run test` to ensure code quality
 
 ## Quality Standards
 
