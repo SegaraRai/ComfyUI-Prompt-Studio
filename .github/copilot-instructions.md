@@ -300,3 +300,4 @@ src/lib/
 - Follow consistent naming conventions
 - Ensure accessibility standards are met
 - Test components in both development and production builds
+- **Prioritize code simplicity**: Discard all backward compatibility except for settings. For code that includes tests, keep only the bare minimum essentials necessary for proper functionality
