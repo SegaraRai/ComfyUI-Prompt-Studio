@@ -426,13 +426,6 @@
     }
   };
 
-  // Global keyboard handling
-  const handleGlobalKeydown = (event: KeyboardEvent) => {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      handleClose();
-    }
-  };
   const handleSubmit = () => {
     $host().dispatchEvent(new Event("cps-submit"));
   };
@@ -466,7 +459,6 @@
     "--editor-font-family": $settingsEditor.fontFamily,
     "--editor-line-height": $settingsEditor.lineHeight,
   }}
-  onkeydown={handleGlobalKeydown}
 >
   <div
     class="modal-box bg-base-200 text-base-content relative mt-4 grid h-[calc(100vh-var(--spacing)*8)] w-320 max-w-[calc(100vw-var(--spacing)*10)] overflow-visible"
